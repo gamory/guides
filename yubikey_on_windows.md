@@ -58,26 +58,83 @@ Modify/Create the file "gpg-agent.conf":
   
 ## Git changes:  
   
+This is assuming you have already setup your public key on the destination git host.  If not, see Github config.  
 Open Cmder  
 If you have not previously configured Git, type the following:  
-* "git config user.name <Your name as it appears on the certs you made>"  
-* "git config user.email <Your e-mail as it appears on the certs you made>"  
+* `git config user.name <Your name as it appears on the certs you made>`  
+* `git config user.email <Your e-mail as it appears on the certs you made>`  
 Now you should be able to configure the key portion:  
 Ensure your Yubikey is currently plugged in.  
 Still in Cmder, type:  
-* "gpg --card-status"  
+* `gpg --card-status`  
   * This should show your card data, if not, see troubleshooting  
-* "gpg --list-keys"  
+* `gpg --list-keys`  
   * This should show a bunch of key data, look for the line "pub", below that, it should show a long key-ID.  Copy this.
-* "git config user.signingkey <the key-ID you copied>"  
-* "git config --global commit.gpgsign true"  
-* "git config gpg.program "C:\Program Files (x86)\Gpg4win\bin\gpg.exe""
+* `git config user.signingkey <the key-ID you copied>`  
+* `git config --global commit.gpgsign true`  
+* `git config gpg.program "C:\Program Files (x86)\Gpg4win\bin\gpg.exe"`
   
-If all has gone well, you should now be able to try a commit, and it should prompt for the PIN (not the admin PIN) of your Yubikey.  You should likewise be able to do a "git push", and provided you entered the unlock PIN recently, may not even get prompted for it.  
+If all has gone well, you should now be able to try a commit, and it should prompt for the PIN (not the admin PIN) of your Yubikey.  You should likewise be able to do a `git push`, and provided you entered the unlock PIN recently, may not even get prompted for it.  
 
+
+## Github config:  
+  
+Login to your Github account.  
+On the upper right, you should see an icon with an arrow, click on that.  
+Click on "Settings".  
+Click on "SSH and GPG keys".  
+Click on "New SSH key", and copy the SSH public key you generated earlier.  
+Click on "New GPG key", and send over your GPG public key.  
+If they are both showing now, you should be good.  
+
+## Generic SSH endpoint config:  
+  
+Login to the destination host.  
+In the user folder of the desired user (ie: /home/<user>), go into ".ssh" (or create if needed).  
+Modify (or create) "authorized_keys".  
+Copy in your public SSH key and save the file.  
+Ensure the file permissions are 700 (if not, type "chmod 700 authorized_keys".  
+This should be good to go, but if it doesn't seem to require the SSH key when you login, reload the service: `sudo systemctl reload sshd.service`.  
+  
 ## Troubleshooting:  
   
-After removing the card, it seems to stop working:  
+#### After removing the card, it seems to stop working:  
 Unfortunately, this does happen sometimes, and you have to kill the existing gpg-agent.  From a command prompt try:  
-"taskill /F /IM gpg-agent.exe"
-Then try "gpg --card-status" again, and see if it has come back.
+`taskill /F /IM gpg-agent.exe`  
+  
+Then try `gpg --card-status` again, and see if it has come back.  
+  
+#### gpg --card-status says it can't contact the agent
+First off, make sure there are NO instances of "gpg-agent" running on your machine (under any user).  
+Try running `gpg --card-status` again, and it should spawn it's own agent service.  
+
+#### gpg --list-keys doesn't show any keys, whether the yubikey is inserted or not  
+GPG isn't aware of your public key.  Run the following:  
+`gpg --import <your GPG public key>`  
+
+It should say that it was imported, and should have the keyID, copy this ID.  If not, something has gone wrong in the import.  (If so, are you sure you specified the GPG Public key, NOT the SSH key)  
+  
+Now you want to make sure that is trusted.  Run the following:  
+`gpg --edit-key <that keyID>`  
+
+You should be in a "gpg>" prompt, type "trust" and press enter.  If should prompt for a trust level between 1 and 5.  If you feel like you can be trusted to import your own keyfile ( :-) ) then type "5" and press enter.  When prompted to confirm, press "y" and enter again.  Type "save" and hit enter.  It may say that no changes were saved, but you should be good.  It should drop back to the command prompt.  
+  
+Try `gpg --list-keys` again.  It should show your key, and right before your name, it should say "[ultimate]".  If it does, the key was imported and trusted successfully.  If not, try the above again.  I did have an instance where I had to trust a key twice to get it to take.  You may also want to stop any existing GPG processes to make sure they get fresh data on the next command (so, look for any of the following tasks: gpg.exe, gpg-agent.exe, kleopatra.exe).  
+
+#### gpg --card-status shows nothing, you have already tried stopping gpg-agent  
+Open a command prompt and type:  
+`where gpg.exe`  
+`where gpg-agent.exe`  
+  
+The first (and hopefully only) listings for those should be in the same directory (which should be "C:\Program Files\Git\usr\bin").  If they are not, you may need to look for and clean up PATH variables.  That's beyond the scope of this article, but finding instructions on google should be easy.  Likewise, it may be useful to use a tool like Process Explorer from SysInternals to determine the calling processes, and their locations.  Again, it's a bit beyond the scope of this.  
+  
+#### git commands prompt for your login/say they can't find the key  
+Make sure that git is configured to use your specified gpg.exe, you can do this by running:  
+`git config gpg.program`  
+  
+It should be set to "C:\Program Files\Git\usr\bin\gpg.exe".  If not, enter:  
+`git config --global gpg.program "C:\Program Files (x86)\Gpg4win\bin\gpg.exe"`  
+
+  
+## Closing  
+Feel free to contact me, or open an issue, and I can try to help.  I'm no expert, but I can at least try and help.  
