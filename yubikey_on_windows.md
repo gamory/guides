@@ -94,7 +94,14 @@ In the user folder of the desired user (ie: /home/<user>), go into ".ssh" (or cr
 Modify (or create) "authorized_keys".  
 Copy in your public SSH key and save the file.  
 Ensure the file permissions are 700 (if not, type "chmod 700 authorized_keys".  
-This should be good to go, but if it doesn't seem to require the SSH key when you login, reload the service: `sudo systemctl reload sshd.service`.  
+  
+SSH will also need to be configured for this:  
+`sudo nano /etc/ssh/sshd_config`  
+Make sure to uncomment the following line:  
+`PubkeyAuthentication yes`  
+`AuthorizedKeysFile      %h/.ssh/authorized_keys`  
+Then restart the service:  
+`sudo /etc/init.d/sshd restart`  
   
 ## Troubleshooting:  
   
