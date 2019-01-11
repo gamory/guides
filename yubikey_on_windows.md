@@ -141,7 +141,26 @@ Make sure that git is configured to use your specified gpg.exe, you can do this 
   
 It should be set to "C:\Program Files\Git\usr\bin\gpg.exe".  If not, enter:  
 `git config --global gpg.program "C:\Program Files (x86)\Gpg4win\bin\gpg.exe"`  
-
+  
+## When running `git push` you are getting : "fatal: unable to access '<your git repo>': error:1425F175:SSL routines:ssl_choose_client_version:inappropriate fallback"  
+You probably will want to chage to using SSH for connecting to git.  However, once you change it, there will still be an issue.  Namely, it will prompt to accept the cert for first connection, but won't actually let you accept it.  To get around this, you need to pipe in your answer.  Ensure your Yubikey is plugged in.  In a command prompt, type:  
+`echo y | plink -ssh git@github.com`  
+  
+You should be prompted to enter the PIN for your Yubikey.  This may show some errors, but what you need to look for is if Git has identified you by your username.  If not, double check that you have put the SSH key into your Github account.  
+  
+Once that is working, go into the folder for your repo, and type `git config -l`.  In the listings, you will see one that says something like:  
+"remote.origin.url=https://github.com/gamory/guides.git"
+  
+You will want to change this to the SSH version, so type in:  
+`git config remote.origin.url git@github.com:<username and repo>`  
+  
+In my instance from above, it changes from:  
+https://github.com/gamory/guides.git  
+  
+to:  
+git@github.com:gamory/guides.git  
+  
+You can confirm it took by running `git config -l` again.  If it looks good, try the `git push` again.  You will need to make this change for any repos you have.  
   
 ## Closing  
 Feel free to contact me, or open an issue, and I can try to help.  I'm no expert, but I can at least try and help.  
