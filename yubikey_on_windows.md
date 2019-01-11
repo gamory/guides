@@ -162,6 +162,12 @@ git@github.com:gamory/guides.git
   
 You can confirm it took by running `git config -l` again.  If it looks good, try the `git push` again.  You will need to make this change for any repos you have.  
   
+## Git troubleshooting if nothing else applies  
+You may want to turn on verbose logging.  There is a --verbose option, but you'll find it doesn't really tell you much.  However, you can switch on tracing with an environmental variable.  This will only apply to the console window you type it in, and only for that session.  To enable this, type:  
+`set GIT_TRACE=2`  
+  
+The next time you run git, it should show a lot more information about what it is doing.  
+  
 ## Closing  
 Feel free to contact me, or open an issue, and I can try to help.  I'm no expert, but I can at least try and help.  
 
