@@ -101,7 +101,7 @@ Make sure to uncomment the following line:
 `PubkeyAuthentication yes`  
 `AuthorizedKeysFile      %h/.ssh/authorized_keys`  
 Then restart the service:  
-`sudo /etc/init.d/sshd restart`  
+`sudo systemctl reload ssh.service`  
   
 ## Troubleshooting:  
   
@@ -145,3 +145,4 @@ It should be set to "C:\Program Files\Git\usr\bin\gpg.exe".  If not, enter:
   
 ## Closing  
 Feel free to contact me, or open an issue, and I can try to help.  I'm no expert, but I can at least try and help.  
+
